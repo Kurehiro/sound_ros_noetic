@@ -1,0 +1,2 @@
+sound_send
+-DCATKIN_DEVEL_PREFIX=/root/workspace/devel -DCMAKE_INSTALL_PREFIX=/root/workspace/install -G Unix Makefiles
