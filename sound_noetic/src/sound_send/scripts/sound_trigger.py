@@ -2,7 +2,7 @@
 import rospy
 import numpy as np
 import sounddevice as sd
-from std_msgs.msg import Time
+from std_msgs.msg import String
 
 class SoundTriggerNode:
     def __init__(self):
@@ -10,71 +10,76 @@ class SoundTriggerNode:
         
         # --- 設定 ---
         # この周波数以上なら反応する (Hz)
-        self.target_freq = rospy.get_param('~target_freq', 2000.0)
+        self.target_freq = rospy.get_param('~target_freq', 300.0)
         # 音量閾値
-        self.vol_thresh = rospy.get_param('~vol_thresh', 1.0)
+        self.vol_thresh = rospy.get_param('~vol_thresh', 0.2)
         
-        self.pub_time = rospy.Publisher('/sound_trigger_time', Time, queue_size=10)
+        self.pub_trigger = rospy.Publisher('/sound_trigger', String, queue_size=10)
         
-        self.fs = 44100
-        self.blocksize = 0
+        self.fs = rospy.get_param('~sample_rate', 48000)
         
-        rospy.loginfo(f"監視開始:{self.target_freq}Hz以上の音を待っている")
+        # デバイスIDを指定したい場合はlaunchファイル等で設定可能にする
+        # 指定がなければ None (= システムのデフォルトマイクを使用)
+        self.device_index = rospy.get_param('~device_index', None) 
         
+        rospy.loginfo(f"監視開始: {self.target_freq}Hz以上の音を待っています")
+        
+        # デバイス情報のログ表示
+        if self.device_index is None:
+            rospy.loginfo("使用デバイス: システムデフォルト (Ubuntuの設定に従います)")
+        else:
+            rospy.loginfo(f"使用デバイスID: {self.device_index}")
         try:
-            # 指定されたデバイス(5)を試す
-            rospy.loginfo("デバイス5での接続を試みます...")
-            dev5_info = sd.query_devices(5, 'input')
-            if dev5_info['max_input_channels'] > 0:
-                with sd.InputStream(callback=self.audio_callback, 
-                                    channels=1,
-                                    device=5,
-                                    samplerate=self.fs, 
-                                    blocksize=self.blocksize):
-                    rospy.spin()
-            else:
-                rospy.logwarn(f"デバイス5は入力チャンネルを持っていません (max_input_channels=0). スキップします。")
-                raise Exception("Device 5 has 0 input channels")
+            # デフォルト（または指定ID）で接続を試みる
+            # blocksize=0 はバックエンドに最適なサイズを自動決定させる設定
+            with sd.InputStream(callback=self.audio_callback, 
+                                channels=1,
+                                device=self.device_index,
+                                samplerate=self.fs, 
+                                blocksize=0):
+                
+                rospy.loginfo("マイクーストリームを開始しました。")
+                rospy.spin()
+                
         except Exception as e:
-            rospy.logwarn(f"デバイス5での接続に失敗しました: {e}")
-            rospy.loginfo("デフォルトデバイス(default)での接続を試みます...")
-            try:
-                with sd.InputStream(callback=self.audio_callback, 
-                                    channels=1,
-                                    device='default',
-                                    samplerate=self.fs, 
-                                    blocksize=self.blocksize):
-                    rospy.spin()
-            except Exception as e2:
-                rospy.logerr(f"マイクエラー (デフォルトデバイスも失敗): {e2}")
-    
+            rospy.logerr(f"マイク接続エラー: {e}")
+            rospy.logerr("ヒント: Ubuntuの[設定] -> [サウンド] -> [入力] で Jabra が選択されているか確認してください。")
+        
     def audio_callback(self, indata, frames, time, status):
         if status:
             print(status)
         
-        vol = np.linalg.norm(indata) * 10
-        if vol < self.vol_thresh:
+        data = indata[:, 0]
+        
+        vol = np.linalg.norm(data) / np.sqrt(len(data))
+        if vol < 0.02:
             return
         
         # 2. 周波数解析 (FFT)
-        data = indata[:, 0]
         window = np.hanning(len(data))
         fft_spec = np.abs(np.fft.rfft(data * window))
         fft_freq = np.fft.rfftfreq(len(data), d=1.0/self.fs)
         
         # 最も強い周波数を取得
-        peak_freq = fft_freq[np.argmax(fft_spec)]
+        voice_band = np.where((fft_freq >= 300) & (fft_freq <= 3000))[0]
+        noise_band = np.where((fft_freq < 300) | (fft_freq > 3000))[0]
+        
+        if len(voice_band) == 0:
+            return
+        
+        voice_pow = np.mean(fft_spec[voice_band])
+        noise_pow = np.mean(fft_spec[noise_band]) if len(noise_band) > 0 else 0
         
         # 3. 判定と時刻送信
-        if peak_freq >= self.target_freq:
+        if voice_pow > self.vol_thresh * 5 and voice_pow > noise_pow:
             # 現在のROS時刻を取得
-            now = rospy.Time.now()
+            word = "sound_trigger_True"
             
             # Publishする
-            self.pub_time.publish(now)
+            self.pub_trigger.publish(word)
             
-            # ログ表示 (人間確認用)
-            rospy.loginfo(f"検知! 時刻:{now.to_sec():.2f}, 周波数:{peak_freq:.0f}Hz")
+            # ログ表示
+            rospy.loginfo(f"voice detected! vol:{vol:.4f}, voicepow:{voice_pow:.2f}")
 
 if __name__ == '__main__':
     SoundTriggerNode()

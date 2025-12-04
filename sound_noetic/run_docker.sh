@@ -9,6 +9,7 @@ xhost +local:root
 # Run the container
 docker run -it --rm \
     --net=host \
+    --gpus all \
     --env="DISPLAY" \
     --env="QT_X11_NO_MITSHM=1" \
     --env="PULSE_SERVER=unix:/run/user/1000/pulse/native" \
