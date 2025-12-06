@@ -6,11 +6,16 @@ import os
 import sys
 import numpy as np
 import noisereduce as nr
+import socket
 from std_msgs.msg import String
 
 class WhisperNode:
     def __init__(self):
         rospy.init_node('whisper_node', anonymous=True)
+        
+        self.robot_ip = rospy.get_param('~robot_ip', '172.17.0.1')
+        self.robot_port = rospy.get_param('~robot_port', 9080)
+        
         
         self.model_size = rospy.get_param('~model','medium')
         self.sub_file = rospy.Subscriber('/audio_path', String, self.callback)
@@ -25,7 +30,7 @@ class WhisperNode:
             self.model = whisper.load_model(self.model_size, device=self.device)
             rospy.loginfo("model load: succeeded")
         except Exception as e:
-            rospy.logger(f"model load: failed")
+            rospy.logerr(f"model load: failed")
             sys.exit(1)
         
         rospy.spin()
@@ -56,6 +61,17 @@ class WhisperNode:
         
         return processed_audio
     
+    def send_to_robot(self,text):
+        try:
+            rospy.loginfo(f"SocketSend -> {self.robot_ip}:{self.robot_port}")
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(2.0)
+                s.connect((self.robot_ip, self.robot_port))
+                s.sendall(text.encode('utf-8'))
+            rospy.loginfo(f'SocketSend: succeeded')
+        except Exception as e:
+            rospy.logerr(f"SocketSend: failed:{e}")
+    
     def callback(self, msg):
         audio_path = msg.data
         rospy.loginfo(f"audio file: {audio_path}")
@@ -83,6 +99,7 @@ class WhisperNode:
             if result_text:
                 rospy.loginfo(f"result: {result_text}")
                 self.pub_result.publish(result_text)
+                self.send_to_robot(result_text)                
                 self.pub_state.publish("done")
             else:
                 rospy.loginfo("no result")

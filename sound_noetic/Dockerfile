@@ -28,6 +28,8 @@ RUN apt-get update && apt-get install -y \
     libbz2-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN echo "export PS1='\[\e[1;36m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ '" >> /root/.bashrc
+
 RUN cd /tmp \
     && wget https://www.python.org/ftp/python/3.10.12/Python-3.10.12.tgz \
     && tar -xvf Python-3.10.12.tgz \
@@ -38,8 +40,8 @@ RUN cd /tmp \
     && cd .. \
     && rm -rf Python-3.10.12 Python-3.10.12.tgz
 
-# Install sounddevice for default Python 3.8 (for sound_trigger.py)
-RUN pip3 install sounddevice
+# Install sounddevice and Whisper dependencies for default Python 3.8
+RUN pip3 install sounddevice openai-whisper noisereduce soundfile && pip3 install -U scipy
 
 # Install pip for Python 3.10
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
