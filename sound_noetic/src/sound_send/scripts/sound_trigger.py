@@ -13,8 +13,16 @@ class SoundTriggerNode:
         self.target_freq = rospy.get_param('~target_freq', 300.0)
         # 音量閾値
         self.vol_thresh = rospy.get_param('~vol_thresh', 0.2)
+        #マイクIDの設定
+        self.mic_id = rospy.get_param('~mic_id', 'default')
         
-        self.pub_trigger = rospy.Publisher('/sound_trigger', String, queue_size=10)
+        if self.mic_id == "f":
+            trigger_topic = '/first_mic/sound_trigger'
+        elif self.mic_id == "s":
+            trigger_topic = '/second_mic/sound_trigger'
+            
+        #publish topic
+        self.pub_trigger = rospy.Publisher(trigger_topic, String, queue_size=10)
         
         self.fs = rospy.get_param('~sample_rate', 48000)
         
@@ -26,9 +34,9 @@ class SoundTriggerNode:
         
         # デバイス情報のログ表示
         if self.device_index is None:
-            rospy.loginfo("使用デバイス: システムデフォルト (Ubuntuの設定に従います)")
+            rospy.loginfo(f"device: {trigger_topic}")
         else:
-            rospy.loginfo(f"使用デバイスID: {self.device_index}")
+            rospy.loginfo(f"deviceID: {self.device_index}")
         try:
             # デフォルト（または指定ID）で接続を試みる
             # blocksize=0 はバックエンドに最適なサイズを自動決定させる設定

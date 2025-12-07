@@ -22,9 +22,26 @@ class SoundSubscriberNode:
         self.recorded_frames = []
         self.lock = threading.Lock()
         
-        self.sub = rospy.Subscriber('/sound_trigger', String, self.topic_callback)
-        self.pub_audio = rospy.Publisher('/audio_path', String, queue_size=10)
-        self.sub_state = rospy.Subscriber('/whisper_state', String, self.state_callback)
+        #マイクID設定
+        self.mic_id = rospy.get_param('~mic_id', 'default_mic')
+        if self.mic_id == 'f':
+            sub_name = '/first_mic/sound_trigger'
+            pub_audio_name = '/first_mic/audio_path'
+            sub_state_name = '/first_mic/whisper_state'
+        elif self.mic_id == 's':
+            sub_name = '/second_mic/sound_trigger'
+            pub_audio_name = '/second_mic/audio_path'
+            sub_state_name = '/second_mic/whisper_state'
+        else:
+            sub_name = f'/{self.mic_id}/sound_trigger'
+            pub_audio_name = f'/{self.mic_id}/audio_path'
+            sub_state_name = f'/{self.mic_id}/whisper_state'
+        
+        #publish topic
+        self.pub_audio = rospy.Publisher(pub_audio_name, String, queue_size=10)
+        #subscribe topic
+        self.sub = rospy.Subscriber(sub_name, String, self.topic_callback)
+        self.sub_state = rospy.Subscriber(sub_state_name, String, self.state_callback)
         
         rospy.loginfo("録音待機中... (トピック受信で録音開始 -> 途絶えて2秒で保存)")
         # --- マイク入力ストリームの開始 ---

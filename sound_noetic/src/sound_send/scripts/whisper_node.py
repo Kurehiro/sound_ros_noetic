@@ -6,21 +6,35 @@ import os
 import sys
 import numpy as np
 import noisereduce as nr
-import socket
+
 from std_msgs.msg import String
 
 class WhisperNode:
     def __init__(self):
         rospy.init_node('whisper_node', anonymous=True)
         
-        self.robot_ip = rospy.get_param('~robot_ip', '172.17.0.1')
-        self.robot_port = rospy.get_param('~robot_port', 9080)
-        
-        
         self.model_size = rospy.get_param('~model','medium')
-        self.sub_file = rospy.Subscriber('/audio_path', String, self.callback)
+        
+        #マイクID設定
+        self.mic_id = rospy.get_param('~mic_id', 'default_mic')
+        if self.mic_id == 'f':
+            sub_file_name = '/first_mic/audio_path'
+            pub_state_name = '/first_mic/whisper_state'
+            self.send_mic_id = 'first'
+        elif self.mic_id == 's':
+            sub_file_name = '/second_mic/audio_path'
+            pub_state_name = '/second_mic/whisper_state'
+            self.send_mic_id = 'second'
+        else:
+            sub_file_name = f'/{self.mic_id}/audio_path'
+            pub_state_name = f'/{self.mic_id}/whisper_state'
+            self.send_mic_id = self.mic_id
+        
+        #publish topic
+        self.sub_file = rospy.Subscriber(sub_file_name, String, self.callback)
+        #subscribe topic
         self.pub_result = rospy.Publisher('/whisper_result', String, queue_size=10)
-        self.pub_state = rospy.Publisher('/whisper_state', String, queue_size=10)
+        self.pub_state = rospy.Publisher(pub_state_name, String, queue_size=10)
         
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         rospy.loginfo(f"device:{self.device}")
@@ -61,17 +75,7 @@ class WhisperNode:
         
         return processed_audio
     
-    def send_to_robot(self,text):
-        try:
-            rospy.loginfo(f"SocketSend -> {self.robot_ip}:{self.robot_port}")
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(2.0)
-                s.connect((self.robot_ip, self.robot_port))
-                s.sendall(text.encode('utf-8'))
-            rospy.loginfo(f'SocketSend: succeeded')
-        except Exception as e:
-            rospy.logerr(f"SocketSend: failed:{e}")
-    
+
     def callback(self, msg):
         audio_path = msg.data
         rospy.loginfo(f"audio file: {audio_path}")
@@ -97,9 +101,10 @@ class WhisperNode:
             result_text = result["text"].strip()
             
             if result_text:
-                rospy.loginfo(f"result: {result_text}")
-                self.pub_result.publish(result_text)
-                self.send_to_robot(result_text)                
+                message = f"{self.send_mic_id}:{result_text}"
+                rospy.loginfo(f"result: {message}")
+                self.pub_result.publish(message)
+
                 self.pub_state.publish("done")
             else:
                 rospy.loginfo("no result")
