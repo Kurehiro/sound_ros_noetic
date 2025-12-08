@@ -22,9 +22,10 @@ class SoundTriggerNode:
             trigger_topic = '/second_mic/sound_trigger'
             
         #publish topic
-        self.pub_trigger = rospy.Publisher(trigger_topic, String, queue_size=10)
+        self.pub_trigger = rospy.Publisher(trigger_topic, String, queue_size=10, latch=True)
         
-        self.fs = rospy.get_param('~sample_rate', 48000)
+        rospy.sleep(1.0)
+        self.fs = rospy.get_param('~sample_rate', 44100)
         
         # デバイスIDを指定したい場合はlaunchファイル等で設定可能にする
         # 指定がなければ None (= システムのデフォルトマイクを使用)
@@ -53,7 +54,7 @@ class SoundTriggerNode:
             rospy.logerr(f"マイク接続エラー: {e}")
             rospy.logerr("ヒント: Ubuntuの[設定] -> [サウンド] -> [入力] で Jabra が選択されているか確認してください。")
         
-    def audio_callback(self, indata, frames, time, status):
+    def audio_callback(self, indata, frames, time_info, status):
         if status:
             print(status)
         

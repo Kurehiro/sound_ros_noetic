@@ -14,11 +14,15 @@ class SoundSubscriberNode:
         
         self.fs = 44100
         self.channels = 1
+        
         self.silence_timeout = 2.0
+        self.whisper_timeout = 15.0
         
         self.is_recording = False
         self.is_waiting_whisper = False
         self.last_trigger_time = rospy.Time.now()
+        self.wait_start_time = rospy.Time.now()
+        
         self.recorded_frames = []
         self.lock = threading.Lock()
         
@@ -61,12 +65,15 @@ class SoundSubscriberNode:
         """
         /sound_trigger トピックを受け取り時の処理
         """
+        rospy.loginfo(f"DEBUG: topic subscribe (Msg: {msg.data})")
         with self.lock:
             if not self.is_recording and not self.is_waiting_whisper:
                 self.last_trigger_time = rospy.Time.now()
                 rospy.loginfo("trigger on: record start")
                 self.is_recording = True
                 self.recorded_frames = []
+            else:
+                pass
     
     def state_callback(self, msg):
         if msg.data == "done":
@@ -100,6 +107,7 @@ class SoundSubscriberNode:
         self.pub_audio.publish(abs_path)
         
         self.is_waiting_whisper = True
+        self.wait_start_time = rospy.Time.now()
         rospy.loginfo("Entering whisper response waiting mode")
     
     def loop(self):
@@ -109,12 +117,18 @@ class SoundSubscriberNode:
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             with self.lock:
+                current_time = rospy.Time.now()
                 if self.is_recording:
                     elapsed = (rospy.Time.now() - self.last_trigger_time).to_sec()
                     if elapsed > self.silence_timeout:
                         self.save_audio()
                         self.is_recording = False
                         self.recorded_frames = []
+                if self.is_waiting_whisper:
+                    wait_elapsed = (current_time - self.wait_start_time).to_sec()
+                    if wait_elapsed > self.whisper_timeout:
+                        rospy.logwarn(f"Whisper応答タイムアウト({self.whisper_timeout}s)。強制リセットします。")
+                        self.is_waiting_whisper = False                
             rate.sleep()
 
 if __name__ == '__main__':
