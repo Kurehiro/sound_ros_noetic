@@ -30,14 +30,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN echo "export PS1='\[\e[1;36m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ '" >> /root/.bashrc
 
-# Set ROS network environment variables
-ENV ROS_MASTER_URI=http://150.89.169.66:11311
-ENV ROS_IP=150.89.169.136
-
-# Ensure they are set in interactive shells (if ENV is overridden or not loaded by shell)
-RUN echo "export ROS_MASTER_URI=http://150.89.169.66:11311" >> /root/.bashrc \
-    && echo "export ROS_IP=150.89.169.136" >> /root/.bashrc
-
 RUN cd /tmp \
     && wget https://www.python.org/ftp/python/3.10.12/Python-3.10.12.tgz \
     && tar -xvf Python-3.10.12.tgz \

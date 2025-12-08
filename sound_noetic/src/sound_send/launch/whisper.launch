@@ -1,0 +1,50 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="mic_id" default="f" />
+  <arg name="device_index" default="" />
+  <arg name="robot_ip" default="150.89.169.66" />
+  <arg name="ros_ip" default="150.89.169.151" />
+
+  <!-- Set ROS Environment Variables -->
+  <!-- Note: env vars in launch files only affect nodes launched by this file, not the master URI if roscore is external -->
+  <!-- However, for remote master, these are better set in the shell before launching. -->
+  <!-- We will assume the user sets ROS_MASTER_URI and ROS_IP in the shell as advised, 
+       but we can pass parameters to nodes if needed. -->
+
+  <!-- Group for namespace or logical grouping -->
+  <group ns="$(arg mic_id)_mic_group">
+    
+    <!-- Sound Trigger Node -->
+    <node pkg="sound_send" type="sound_trigger.py" name="sound_trigger_node" output="screen">
+      <param name="mic_id" value="$(arg mic_id)" />
+      <param name="device_index" value="$(arg device_index)" if="$(eval arg('device_index') != '')"/>
+    </node>
+
+    <!-- Sound Subscriber Node -->
+    <node pkg="sound_send" type="sound_subsc.py" name="sound_subscriber_node" output="screen">
+      <param name="mic_id" value="$(arg mic_id)" />
+      <param name="device_index" value="$(arg device_index)" if="$(eval arg('device_index') != '')"/>
+    </node>
+
+    <!-- Whisper Node -->
+    <node pkg="sound_send" type="whisper_node.py" name="whisper_node" output="screen">
+      <!-- Remap audio_path to match the one published by sound_subscriber_node -->
+      <!-- sound_subsc.py publishes to /{mic_id}/audio_path -->
+      <!-- whisper_node subscribes to /audio_path by default -->
+      
+      <!-- Logic in sound_subsc.py handles topic names based on mic_id manually, 
+           so we might need to adjust remapping or rely on the node's internal logic if it was updated.
+           Looking at whisper_node.py, it subscribes to '/audio_path'.
+           Looking at sound_subsc.py, it publishes to '/first_mic/audio_path' if mic_id='f'.
+      -->
+      
+      <remap from="/audio_path" to="/first_mic/audio_path" if="$(eval arg('mic_id') == 'f')"/>
+      <remap from="/audio_path" to="/second_mic/audio_path" if="$(eval arg('mic_id') == 's')"/>
+      <remap from="/audio_path" to="/$(arg mic_id)/audio_path" if="$(eval arg('mic_id') != 'f' and arg('mic_id') != 's')"/>
+      
+      <!-- Remap result and state topics if needed to avoid collision between multiple mics -->
+      <remap from="/whisper_result" to="/$(arg mic_id)/whisper_result" />
+      <remap from="/whisper_state" to="/$(arg mic_id)/whisper_state" />
+    </node>
+  </group>
+</launch>

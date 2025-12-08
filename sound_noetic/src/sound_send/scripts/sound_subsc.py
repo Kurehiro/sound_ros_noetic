@@ -22,6 +22,10 @@ class SoundSubscriberNode:
         self.recorded_frames = []
         self.lock = threading.Lock()
         
+        # デバイスIDを指定したい場合はlaunchファイル等で設定可能にする
+        # 指定がなければ None (= システムのデフォルトマイクを使用)
+        self.device_index = rospy.get_param('~device_index', None)
+        
         #マイクID設定
         self.mic_id = rospy.get_param('~mic_id', 'default_mic')
         if self.mic_id == 'f':
@@ -50,7 +54,7 @@ class SoundSubscriberNode:
         with sd.InputStream(callback=self.audio_callback,
                             channels=self.channels,
                             samplerate=self.fs,
-                            device=None):
+                            device=self.device_index):
             self.loop()
     
     def topic_callback(self, msg):
