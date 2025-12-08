@@ -64,16 +64,26 @@ class SoundSubscriberNode:
     def topic_callback(self, msg):
         """
         /sound_trigger トピックを受け取り時の処理
+        - 重要: トリガーは常に last_trigger_time を更新して録音延長させる
         """
         rospy.loginfo(f"DEBUG: topic subscribe (Msg: {msg.data})")
         with self.lock:
-            if not self.is_recording and not self.is_waiting_whisper:
-                self.last_trigger_time = rospy.Time.now()
-                rospy.loginfo("trigger on: record start")
+            now = rospy.Time.now()
+            # 常に更新して録音を延長可能にする
+            self.last_trigger_time = now
+
+            if self.is_waiting_whisper:
+                rospy.loginfo("Received, but will be ignored as waiting for a whisper response.（is_waiting_whisper=True）")
+                return
+
+            if not self.is_recording:
                 self.is_recording = True
                 self.recorded_frames = []
+                rospy.loginfo("trigger on: record start")
             else:
-                pass
+                # 録音中のトリガーは録音継続（last_trigger_time を更新したことで実現）
+                rospy.loginfo("trigger: extend recording")
+
     
     def state_callback(self, msg):
         if msg.data == "done":

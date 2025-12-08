@@ -22,10 +22,13 @@ class SoundTriggerNode:
             trigger_topic = '/second_mic/sound_trigger'
             
         #publish topic
-        self.pub_trigger = rospy.Publisher(trigger_topic, String, queue_size=10, latch=True)
+        self.pub_trigger = rospy.Publisher(trigger_topic, String, queue_size=10, latch=False)
         
-        rospy.sleep(1.0)
         self.fs = rospy.get_param('~sample_rate', 44100)
+        
+        self._last_pub_time = rospy.Time(0)
+        self._min_pub_interval = rospy.get_param('~min_val', 0.05)
+        
         
         # デバイスIDを指定したい場合はlaunchファイル等で設定可能にする
         # 指定がなければ None (= システムのデフォルトマイクを使用)
@@ -63,6 +66,11 @@ class SoundTriggerNode:
         vol = np.linalg.norm(data) / np.sqrt(len(data))
         if vol < 0.02:
             return
+        
+        now = rospy.Time.now()
+        if (now - self._last_pub_time).to_sec() >= self._min_pub_interval:
+            self.pub_trigger.publish(word)
+            self._last_pub_time = now
         
         # 2. 周波数解析 (FFT)
         window = np.hanning(len(data))
