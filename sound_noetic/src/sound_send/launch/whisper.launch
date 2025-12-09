@@ -20,7 +20,7 @@
       <remap from="/audio_path" to="/second_mic/audio_path" if="$(eval arg('mic_id') == 's')"/>
       <remap from="/audio_path" to="/$(arg mic_id)/audio_path" if="$(eval arg('mic_id') != 'f' and arg('mic_id') != 's')"/>
       
-      <remap from="/whisper_result" to="/$(arg mic_id)/whisper_result" />
+      <remap from="/whisper_result" to="/whisper_result" />
       <remap from="/whisper_state" to="/$(arg mic_id)/whisper_state" />
     </node>
   </group>
