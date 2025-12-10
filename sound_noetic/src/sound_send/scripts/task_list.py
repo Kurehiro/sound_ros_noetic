@@ -37,6 +37,7 @@ class TaskList:
         self.all_task_list.append(mic_task_text)
         rospy.loginfo(f"list append {mic_task_text}")
         rospy.loginfo(f"Remaining Tasks: {len(self.all_task_list)}")
+        self.save_to_file()
 
     def next_callback(self,msg):
         rospy.loginfo("next task publish")
