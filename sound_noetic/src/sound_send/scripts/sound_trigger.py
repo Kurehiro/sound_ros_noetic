@@ -10,9 +10,9 @@ class SoundTriggerNode:
         
         # --- 設定 ---
         # この周波数以上なら反応する (Hz)
-        self.target_freq = rospy.get_param('~target_freq', 300.0)
+        self.target_freq = rospy.get_param('~target_freq', 100.0)
         # 音量閾値
-        self.vol_thresh = rospy.get_param('~vol_thresh', 0.2)
+        self.vol_thresh = rospy.get_param('~vol_thresh', 0.05)
         #マイクIDの設定
         self.mic_id = rospy.get_param('~mic_id', 'default')
         
@@ -69,8 +69,8 @@ class SoundTriggerNode:
         fft_freq = np.fft.rfftfreq(len(data), d=1.0/self.fs)
         
         # 最も強い周波数を取得
-        voice_band = np.where((fft_freq >= 300) & (fft_freq <= 3000))[0]
-        noise_band = np.where((fft_freq < 300) | (fft_freq > 3000))[0]
+        voice_band = np.where((fft_freq >= 100) & (fft_freq <= 4000))[0]
+        noise_band = np.where((fft_freq < 80) | (fft_freq > 5000))[0]
         
         if len(voice_band) == 0:
             return
@@ -79,7 +79,7 @@ class SoundTriggerNode:
         noise_pow = np.mean(fft_spec[noise_band]) if len(noise_band) > 0 else 0
         
         # 3. 判定と時刻送信
-        if voice_pow > self.vol_thresh * 5 and voice_pow > noise_pow:
+        if voice_pow > self.vol_thresh and voice_pow > noise_pow * 1.5:
             # 現在のROS時刻を取得
             word = "sound_trigger_True"
             

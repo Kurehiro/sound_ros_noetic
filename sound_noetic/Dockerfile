@@ -54,5 +54,12 @@ RUN echo "pcm.default pulse\nctl.default pulse" > /etc/asound.conf
 # Setup environment
 ENV SHELL /bin/bash
 
+# Configure Terminator
+RUN mkdir -p /root/.config/terminator
+COPY terminator_config /root/.config/terminator/config
+
+# Set working directory
+WORKDIR /root/workspace
+
 # Entrypoint
 CMD ["terminator"]

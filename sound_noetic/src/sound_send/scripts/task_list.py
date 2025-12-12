@@ -3,9 +3,9 @@ import rospy
 import numpy as np
 from std_msgs.msg import String
 
-class TaskList:
+class TaskListNode:
     def __init__(self):
-        rospy.init_node('task_list', anonymous=True)
+        rospy.init_node('task_list_node', anonymous=True)
         
         #Subscribe topic
         self.sub_task = rospy.Subscriber('/whisper_result', String, self.task_callback)
@@ -47,7 +47,7 @@ class TaskList:
             msg_out = String(data=item)
             self.pub_send_task.publish(msg_out)
             
-            rospy.loginfo(f"Send Task: {self.pub_send_task}")
+            rospy.loginfo(f"Send Task: {item}")
             rospy.loginfo(f"Remaining Tasks: {len(self.all_task_list)}")
             
             self.save_to_file()
@@ -56,6 +56,6 @@ class TaskList:
 
 if __name__ == '__main__':
     try:
-        TaskList()
+        TaskListNode()
     except rospy.ROSInterruptException:
         pass
