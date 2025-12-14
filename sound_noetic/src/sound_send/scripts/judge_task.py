@@ -7,8 +7,8 @@ class JudgeTaskNode:
     def __init__(self):
         rospy.init_node('judge_task_node', anonymous=True)
         
-        self.api_path = "/root/HSR/catkin_ws/src/sound_ros_noetic/sound_noetic/src/sound_send/scripts/GPT_API_Key.txt"
-        self.prompt_path = "/root/HSR/catkin_ws/src/sound_ros_noetic/sound_noetic/src/sound_send/scripts/prompt_judege.txt"
+        self.api_path = "/root/HSR/catkin_ws/src/sound_ros_noetic/sound_noetic/src/sound_send/sentence_text/GPT_API_Key.txt"
+        self.prompt_path = "/root/HSR/catkin_ws/src/sound_ros_noetic/sound_noetic/src/sound_send/sentence_text/prompt_judge.txt"
         
         self.sub_task_list = rospy.Subscriber('/send_task', String, self.GPT_callback)
         
@@ -19,7 +19,7 @@ class JudgeTaskNode:
             with open(self.prompt_path, 'r') as f:
                 self.prompt_content = f.read()
             with open(self.api_path, 'r') as f:
-                self.api_key = f.read().strip()
+                openai.api_key = f.read().strip()
         except Exception as e:
             rospy.logerr(f"faile erorr: {e}")
             return
@@ -54,8 +54,9 @@ class JudgeTaskNode:
         
         result = self.GPT_prompt(task)
         
+        rospy.loginfo(f"GPT response: {result}")
         msg_out = String(data=result)
-        self.pub_GPT_result.publishe(msg_out)
+        self.pub_GPT_result.publish(msg_out)
         
         rospy.loginfo(f"Result Published: {result}")
 
