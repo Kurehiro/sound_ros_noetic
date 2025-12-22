@@ -1,4 +1,16 @@
-# API Keys and Secrets
-sound_noetic/src/sound_send/sentence_text/GPT_API_Key.txt
-sound_noetic/src/sound_send/sentence_text/prompt_judge.txt
+# --- 機密情報 (ファイル名で指定すれば移動しても安心です) ---
+GPT_API_Key.txt
+prompt_judge.txt
 .env
+
+# --- Pythonの自動生成ファイル ---
+__pycache__/
+*.pyc
+
+# --- ROS/Catkinのビルド生成物 ---
+build/
+devel/
+.catkin_workspace
+
+# --- データファイル (必要に応じて) ---
+*.wav
