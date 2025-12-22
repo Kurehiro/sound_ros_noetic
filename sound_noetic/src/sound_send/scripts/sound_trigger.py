@@ -67,6 +67,7 @@ class SoundTriggerNode:
         window = np.hanning(len(data))
         fft_spec = np.abs(np.fft.rfft(data * window))
         fft_freq = np.fft.rfftfreq(len(data), d=1.0/self.fs)
+        power_spec = fft_spec ** 2
         
         # 最も強い周波数を取得
         voice_band = np.where((fft_freq >= 100) & (fft_freq <= 4000))[0]
@@ -74,12 +75,14 @@ class SoundTriggerNode:
         
         if len(voice_band) == 0:
             return
+
+        voice_pow = np.mean(power_spec[voice_band])
+        noise_pow = np.mean(power_spec[noise_band]) if len(noise_band) > 0 else 0
         
-        voice_pow = np.mean(fft_spec[voice_band])
-        noise_pow = np.mean(fft_spec[noise_band]) if len(noise_band) > 0 else 0
+        snr_db = 10 * np.log10((voice_pow + 1e-12) / (noise_pow + 1e-12))
         
-        # 3. 判定と時刻送信
-        if voice_pow > self.vol_thresh and voice_pow > noise_pow * 1.5:
+        # 3. 判定と送信
+        if snr_db > 6 and voice_pow > self.vol_thresh:
             # 現在のROS時刻を取得
             word = "sound_trigger_True"
             
