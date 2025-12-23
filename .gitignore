@@ -1,7 +1,6 @@
 # --- 機密情報 (ファイル名で指定すれば移動しても安心です) ---
 GPT_API_Key.txt
 prompt_judge.txt
-.env
 
 # --- Pythonの自動生成ファイル ---
 __pycache__/
