@@ -19,9 +19,7 @@ class SoundSubscriberNode:
         self.whisper_timeout = 15.0
         
         self.is_recording = False
-        self.is_waiting_whisper = False
         self.last_trigger_time = rospy.Time.now()
-        self.wait_start_time = rospy.Time.now()
         
         self.recorded_frames = []
         self.lock = threading.Lock()
@@ -35,21 +33,19 @@ class SoundSubscriberNode:
         if self.mic_id == 'f':
             sub_name = '/first_mic/sound_trigger'
             pub_audio_name = '/first_mic/audio_path'
-            sub_state_name = '/first_mic/whisper_state'
-        elif self.mic_id == 's':
             sub_name = '/second_mic/sound_trigger'
             pub_audio_name = '/second_mic/audio_path'
-            sub_state_name = '/second_mic/whisper_state'
         else:
             sub_name = f'/{self.mic_id}/sound_trigger'
             pub_audio_name = f'/{self.mic_id}/audio_path'
-            sub_state_name = f'/{self.mic_id}/whisper_state'
+            sub_name = f'/{self.mic_id}/sound_trigger'
+            pub_audio_name = f'/{self.mic_id}/audio_path'
         
         #publish topic
         self.pub_audio = rospy.Publisher(pub_audio_name, String, queue_size=10)
         #subscribe topic
         self.sub = rospy.Subscriber(sub_name, String, self.topic_callback)
-        self.sub_state = rospy.Subscriber(sub_state_name, String, self.state_callback)
+        self.sub = rospy.Subscriber(sub_name, String, self.topic_callback)
         
         rospy.loginfo("録音待機中... (トピック受信で録音開始 -> 途絶えて2秒で保存)")
         # --- マイク入力ストリームの開始 ---
@@ -72,10 +68,6 @@ class SoundSubscriberNode:
             # 常に更新して録音を延長可能にする
             self.last_trigger_time = now
 
-            if self.is_waiting_whisper:
-                rospy.loginfo("Received, but will be ignored as waiting for a whisper response.（is_waiting_whisper=True）")
-                return
-
             if not self.is_recording:
                 self.is_recording = True
                 self.recorded_frames = []
@@ -84,10 +76,6 @@ class SoundSubscriberNode:
                 # 録音中のトリガーは録音継続（last_trigger_time を更新したことで実現）
                 rospy.loginfo("trigger: extend recording")
 
-    def state_callback(self, msg):
-        if msg.data == "done":
-            self.is_waiting_whisper = False
-            rospy.loginfo("whisper succeeded: next")
     
     def audio_callback(self, indata, frames, time, status):
         """
@@ -106,7 +94,7 @@ class SoundSubscriberNode:
         if not self.recorded_frames:
             return
         
-        filename = datetime.datetime.now().strftime("task_sound.wav")
+        filename = datetime.datetime.now().strftime("task_sound_%Y%m%d_%H%M%S.wav")
         full_data = np.concatenate(self.recorded_frames, axis=0)
         wav.write(filename, self.fs, full_data)
         
@@ -114,10 +102,6 @@ class SoundSubscriberNode:
         
         rospy.loginfo(f"record stop: {filename}")
         self.pub_audio.publish(abs_path)
-        
-        self.is_waiting_whisper = True
-        self.wait_start_time = rospy.Time.now()
-        rospy.loginfo("Entering whisper response waiting mode")
     
     def loop(self):
         """
@@ -133,11 +117,7 @@ class SoundSubscriberNode:
                         self.save_audio()
                         self.is_recording = False
                         self.recorded_frames = []
-                if self.is_waiting_whisper:
-                    wait_elapsed = (current_time - self.wait_start_time).to_sec()
-                    if wait_elapsed > self.whisper_timeout:
-                        rospy.logwarn(f"Whisper応答タイムアウト({self.whisper_timeout}s)。強制リセットします。")
-                        self.is_waiting_whisper = False                
+                        self.recorded_frames = []
             rate.sleep()
 
 if __name__ == '__main__':
