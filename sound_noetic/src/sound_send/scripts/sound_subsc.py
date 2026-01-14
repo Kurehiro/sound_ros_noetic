@@ -15,7 +15,7 @@ class SoundSubscriberNode:
         self.fs = 44100
         self.channels = 1
         
-        self.silence_timeout = 2.0
+        self.silence_timeout = 1.0
         self.whisper_timeout = 15.0
         
         self.is_recording = False
@@ -84,7 +84,6 @@ class SoundSubscriberNode:
                 # 録音中のトリガーは録音継続（last_trigger_time を更新したことで実現）
                 rospy.loginfo("trigger: extend recording")
 
-    
     def state_callback(self, msg):
         if msg.data == "done":
             self.is_waiting_whisper = False
