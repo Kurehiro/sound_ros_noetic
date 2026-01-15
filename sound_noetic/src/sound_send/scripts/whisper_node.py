@@ -125,18 +125,17 @@ class WhisperNode:
                 self.pub_state.publish("done")
         
         except Exception as e:
-            rospy.logerr(f"whisper error: {e}")
+            rospy.logerr(f"whisper error")
             self.pub_state.publish("done")
-        
+            
         finally:
-            # 処理が終わったら（成功・失敗に関わらず）ファイルを削除する
+        # 処理が終わったら（成功・失敗に関わらず）ファイルを削除する
             if os.path.exists(audio_path):
                 try:
                     os.remove(audio_path)
                     rospy.loginfo(f"Deleted file: {audio_path}")
                 except Exception as e:
                     rospy.logwarn(f"Failed to delete file: {e}")
-
 if __name__ == '__main__':
     try:
         WhisperNode()

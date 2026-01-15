@@ -19,7 +19,9 @@ class SoundSubscriberNode:
         self.whisper_timeout = 15.0
         
         self.is_recording = False
+        self.is_waiting_whisper = False
         self.last_trigger_time = rospy.Time.now()
+        self.wait_start_time = rospy.Time.now()
         
         self.recorded_frames = []
         self.lock = threading.Lock()
@@ -33,18 +35,16 @@ class SoundSubscriberNode:
         if self.mic_id == 'f':
             sub_name = '/first_mic/sound_trigger'
             pub_audio_name = '/first_mic/audio_path'
+        elif self.mic_id == 's':
             sub_name = '/second_mic/sound_trigger'
             pub_audio_name = '/second_mic/audio_path'
         else:
-            sub_name = f'/{self.mic_id}/sound_trigger'
-            pub_audio_name = f'/{self.mic_id}/audio_path'
             sub_name = f'/{self.mic_id}/sound_trigger'
             pub_audio_name = f'/{self.mic_id}/audio_path'
         
         #publish topic
         self.pub_audio = rospy.Publisher(pub_audio_name, String, queue_size=10)
         #subscribe topic
-        self.sub = rospy.Subscriber(sub_name, String, self.topic_callback)
         self.sub = rospy.Subscriber(sub_name, String, self.topic_callback)
         
         rospy.loginfo("録音待機中... (トピック受信で録音開始 -> 途絶えて2秒で保存)")
@@ -67,7 +67,7 @@ class SoundSubscriberNode:
             now = rospy.Time.now()
             # 常に更新して録音を延長可能にする
             self.last_trigger_time = now
-
+            
             if not self.is_recording:
                 self.is_recording = True
                 self.recorded_frames = []
@@ -116,8 +116,7 @@ class SoundSubscriberNode:
                     if elapsed > self.silence_timeout:
                         self.save_audio()
                         self.is_recording = False
-                        self.recorded_frames = []
-                        self.recorded_frames = []
+                        self.recorded_frames = []              
             rate.sleep()
 
 if __name__ == '__main__':
