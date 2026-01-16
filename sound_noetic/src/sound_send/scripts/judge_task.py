@@ -6,7 +6,8 @@ from std_msgs.msg import String
 class JudgeTaskNode:
     def __init__(self):
         rospy.init_node('judge_task_node', anonymous=True)
-        
+
+        self.result_task = "/root/HSR/catkin_ws/src/sound_ros_noetic/sound_noetic/src/sound_send/scripts/task_list.txt"
         self.api_path = "/root/HSR/catkin_ws/src/sound_ros_noetic/sound_noetic/src/sound_send/sentence_text/GPT_API_Key.txt"
         self.prompt_path = "/root/HSR/catkin_ws/src/sound_ros_noetic/sound_noetic/src/sound_send/sentence_text/prompt_judge.txt"
         
@@ -36,17 +37,18 @@ class JudgeTaskNode:
             message = prompt + input_task
             
             response = openai.chat.completions.create(
-                model = "gpt-4o",
-                messages = message,
-                temperature = 0.0,
-                max_tokens = 2048
+                model="gpt-5-mini",
+                messages=message,
+                temperature=1.0,
+                max_completion_tokens=2048
             )
             
             context = response.choices[0].message.content
-            
             return context
+        
         except Exception as e:
             rospy.logerr(f"GPT API Error: {e}")
+            return "no result"
     
     def GPT_callback(self,msg):
         task = msg.data
@@ -56,8 +58,17 @@ class JudgeTaskNode:
         
         rospy.loginfo(f"GPT response: {result}")
         msg_out = String(data=result)
+        self.task_result.append(result)
         self.pub_GPT_result.publish(msg_out)
         
+        try:
+            with open(self.result_task, 'w', encoding='utf-8') as f:
+                for t in self.task_result:
+                    f.write(t + '\n')
+            rospy.loginfo(f"Task Added to List: {result}")
+        except Exception as e:
+            rospy.logerr(f"File Write Error: {e}")
+
         rospy.loginfo(f"Result Published: {result}")
 
 if __name__ == "__main__":
