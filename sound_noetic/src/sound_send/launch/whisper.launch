@@ -1,6 +1,7 @@
 <launch>
   <arg name="mic_id" default="f" />
   <arg name="device_index" default="" />
+  <arg name="vol_thresh" default="0.2" />
   <arg name="robot_ip" default="150.89.169.206" />
   <arg name="ros_ip" default="150.89.169.151" />
 
@@ -8,6 +9,7 @@
     
     <node pkg="sound_send" type="sound_trigger.py" name="sound_trigger_node" output="screen">
       <param name="mic_id" value="$(arg mic_id)" />
+      <param name="vol_thresh" value="$(arg vol_thresh)" />
       <param name="device_index" value="$(arg device_index)" if="$(eval arg('device_index') != '')"/>
     </node>
 

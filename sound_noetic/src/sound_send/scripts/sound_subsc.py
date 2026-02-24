@@ -43,7 +43,7 @@ class SoundSubscriberNode:
             pub_audio_name = f'/{self.mic_id}/audio_path'
         
         #publish topic
-        self.pub_audio = rospy.Publisher(pub_audio_name, String, queue_size=10)
+        self.pub_audio = rospy.Publisher(pub_audio_name, String, queue_size=40)
         #subscribe topic
         self.sub = rospy.Subscriber(sub_name, String, self.topic_callback)
         
