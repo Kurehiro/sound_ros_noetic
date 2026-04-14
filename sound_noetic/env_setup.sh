@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Default values
-DEFAULT_ROS_MASTER_URI="http://localhost:11311"
-DEFAULT_ROS_IP=$(hostname -I | awk '{print $1}')
+DEFAULT_ROS_MASTER_URI="http://ros_audio_container:11311"
+DEFAULT_ROS_HOSTNAME="ros_audio_container"
 
 # Check if .env exists and load it
 if [ -f .env ]; then
@@ -22,17 +22,24 @@ HOME_DIR=$HOME
 read -p "Enter ROS_MASTER_URI [${ROS_MASTER_URI:-$DEFAULT_ROS_MASTER_URI}]: " INPUT_URI
 ROS_MASTER_URI=${INPUT_URI:-${ROS_MASTER_URI:-$DEFAULT_ROS_MASTER_URI}}
 
+read -p "Enter ROS_HOSTNAME [${ROS_HOSTNAME:-$DEFAULT_ROS_HOSTNAME}]: " INPUT_HOSTNAME
+ROS_HOSTNAME=${INPUT_HOSTNAME:-${ROS_HOSTNAME:-$DEFAULT_ROS_HOSTNAME}}
+
 # Write to .env
-cat << EOF > .env
+cat << EOF_ENV > .env
 ROS_MASTER_URI=$ROS_MASTER_URI
+ROS_HOSTNAME=$ROS_HOSTNAME
 XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
 HOME_DIR=$HOME_DIR
 USER_ID=$USER_ID
 GROUP_ID=$GROUP_ID
 DISPLAY=$DISPLAY
-EOF
+EOF_ENV
 
 echo "Configuration saved to .env:"
 cat .env
 echo ""
-echo "You can now run: docker compose run --rm ros_audio bash"
+echo "Next steps:"
+echo "  1) bash 01_build_image.sh"
+echo "  2) bash 02_create_container.sh"
+echo "  3) bash 03_start_container.sh"
