@@ -1,19 +1,18 @@
-version: '3.8'
-
 services:
   ros_audio:
     build: .
     image: ros_noetic_audio
     container_name: ros_audio_container
-    network_mode: host
+    hostname: ros_audio_container
+    command: ["bash", "-lc", "tail -f /dev/null"]
     privileged: true
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
       - PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native
       - PULSE_COOKIE=/root/.config/pulse/cookie
-      - ROS_MASTER_URI=${ROS_MASTER_URI}
-      - ROS_IP=${ROS_IP}
+      - ROS_MASTER_URI=${ROS_MASTER_URI:-http://ros_audio_container:11311}
+      - ROS_HOSTNAME=${ROS_HOSTNAME:-ros_audio_container}
     volumes:
       - /dev/snd:/dev/snd
       - ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native
@@ -30,5 +29,12 @@ services:
               capabilities: [ gpu ]
     group_add:
       - audio
-    stdin_open: true # docker run -i
-    tty: true # docker run -t
+    stdin_open: true
+    tty: true
+    networks:
+      - ros_net
+
+networks:
+  ros_net:
+    name: ros_net
+    driver: bridge

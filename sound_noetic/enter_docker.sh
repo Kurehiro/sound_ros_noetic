@@ -1,15 +1,16 @@
 #!/bin/bash
+set -e
 
-# Xサーバーへのアクセスを許可
-xhost +local:docker
+cd "$(dirname "$0")"
 
-# Auto-detect IP (first non-loopback interface)
-export ROS_IP=$(hostname -I | awk '{print $1}')
+# Xサーバーへのアクセスを許可（失敗しても継続）
+xhost +local:docker >/dev/null 2>&1 || true
 
-echo "Detected IP: $ROS_IP"
-
-# コンテナをバックグラウンドで起動（存在しない場合は作成、停止している場合は起動）
-docker compose up -d
+# サービスが未作成/停止中でも確実に起動
+if ! docker compose ps --status running --services | grep -qx "ros_audio"; then
+  echo "ros_audio_container is not running. Starting it..."
+  docker compose up -d ros_audio
+fi
 
 # コンテナの中に入る
-docker exec -it ros_audio_container bash
+exec docker exec -it ros_audio_container bash
