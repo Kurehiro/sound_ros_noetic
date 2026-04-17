@@ -6,11 +6,20 @@
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
 ### ポイント
 - `git commit` しただけでは、**自分のPC（ローカル）に記録されるだけ**です。
 - `git push` して初めて、GitHub（リモート）に反映されます。
 - ブランチ名が分からない場合は `git branch --show-current` で確認できます。
 =======
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
 =======
 >>>>>>> theirs
 =======
@@ -41,7 +50,16 @@
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
 =======
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
 =======
 >>>>>>> theirs
 =======
@@ -70,6 +88,15 @@ ROS1は Master 登録後にノード同士で直接通信します。
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
 >>>>>>> theirs
 =======
 >>>>>>> theirs
@@ -112,8 +139,23 @@ bash env_setup.sh
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
 - `ROS_MASTER_URI`
 - `ROS_IP`
+=======
+- `ROS_MASTER_URI`（デフォルト: `http://ros_audio_container:11311`）
+- `ROS_HOSTNAME`（デフォルト: `ros_audio_container`）
+>>>>>>> theirs
+=======
+- `ROS_MASTER_URI`（デフォルト: `http://ros_audio_container:11311`）
+- `ROS_HOSTNAME`（デフォルト: `ros_audio_container`）
+>>>>>>> theirs
+=======
+- `ROS_MASTER_URI`（デフォルト: `http://ros_audio_container:11311`）
+- `ROS_HOSTNAME`（デフォルト: `ros_audio_container`）
+>>>>>>> theirs
 =======
 - `ROS_MASTER_URI`（デフォルト: `http://ros_audio_container:11311`）
 - `ROS_HOSTNAME`（デフォルト: `ros_audio_container`）
@@ -185,6 +227,9 @@ bash enter_docker.sh
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
 または直接:
 
 ```bash
@@ -209,16 +254,25 @@ docker exec -it ros_audio_container bash
 >>>>>>> theirs
 =======
 >>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
 `enter_docker.sh` は以下を実施します。
 - `docker compose up -d ros_audio`
 - コンテナIPを取得して `ROS_IP` として設定
 - `terminator_config` を毎回 `/root/.config/terminator/config` に反映
+<<<<<<< ours
 - Terminatorレイアウト `ros_13` を起動（大1 + 中4 + 小8 の13ペイン）
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
 - 失敗時は `bash` へフォールバック
 <<<<<<< ours
 >>>>>>> theirs
@@ -243,6 +297,21 @@ docker exec -it ros_audio_container bash
 =======
 - GTK/X11安定化のため `GDK_DISABLE_SHM=1` / `NO_AT_BRIDGE=1` / `--no-dbus` を適用
 - 失敗時は `bash` へフォールバック
+>>>>>>> theirs
+=======
+- GTK/X11安定化のため `GDK_DISABLE_SHM=1` / `NO_AT_BRIDGE=1` / `--no-dbus` を適用
+- 失敗時は `bash` へフォールバック
+>>>>>>> theirs
+=======
+- GTK/X11安定化のため `GDK_DISABLE_SHM=1` / `NO_AT_BRIDGE=1` / `--no-dbus` を適用
+- 各ペインは `ros_shell_init.sh` を経由して `devel/setup.bash` と ROS環境変数を自動設定
+- 失敗時は `bash -lc /root/workspace/ros_shell_init.sh` へフォールバック
+>>>>>>> theirs
+=======
+- Terminatorレイアウト `ros_8` を起動（8ペイン）
+- GTK/X11安定化のため `GDK_DISABLE_SHM=1` / `NO_AT_BRIDGE=1` / `--no-dbus` を適用
+- 各ペインは `ros_shell_init.sh` を経由して `devel/setup.bash` と ROS環境変数を自動設定
+- 失敗時は `bash -lc /root/workspace/ros_shell_init.sh` へフォールバック
 >>>>>>> theirs
 
 ---
@@ -260,7 +329,19 @@ docker exec -it ros_audio_container bash
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
 cd /root/workspace/src/sound_send
+=======
+cd /root/workspace
+>>>>>>> theirs
+=======
+cd /root/workspace
+>>>>>>> theirs
+=======
+cd /root/workspace
+>>>>>>> theirs
 =======
 cd /root/workspace
 >>>>>>> theirs
@@ -314,8 +395,17 @@ roslaunch sound_send whisper.launch mic_id:=f vol_thresh:=0.2
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
 ## 6. よく使う確認コマンド
 =======
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
 =======
 >>>>>>> theirs
 =======
@@ -357,6 +447,15 @@ networks:
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
 >>>>>>> theirs
 =======
 >>>>>>> theirs
@@ -386,6 +485,18 @@ docker logs ros_audio_container --tail 100
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+=======
+docker network inspect ros_net
+>>>>>>> theirs
+=======
+docker network inspect ros_net
+>>>>>>> theirs
+=======
+docker network inspect ros_net
+>>>>>>> theirs
 =======
 docker network inspect ros_net
 >>>>>>> theirs
@@ -423,6 +534,18 @@ docker network inspect ros_net
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+=======
+printenv | grep -E 'ROS_MASTER_URI|ROS_HOSTNAME|ROS_IP'
+>>>>>>> theirs
+=======
+printenv | grep -E 'ROS_MASTER_URI|ROS_HOSTNAME|ROS_IP'
+>>>>>>> theirs
+=======
+printenv | grep -E 'ROS_MASTER_URI|ROS_HOSTNAME|ROS_IP'
+>>>>>>> theirs
 =======
 printenv | grep -E 'ROS_MASTER_URI|ROS_HOSTNAME|ROS_IP'
 >>>>>>> theirs
@@ -461,7 +584,19 @@ rostopic echo /whisper_result
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
 ## 7. 停止・削除
+=======
+## 8. 停止・削除
+>>>>>>> theirs
+=======
+## 8. 停止・削除
+>>>>>>> theirs
+=======
+## 8. 停止・削除
+>>>>>>> theirs
 =======
 ## 8. 停止・削除
 >>>>>>> theirs
@@ -501,7 +636,16 @@ docker compose down
 <<<<<<< ours
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
 
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
 >>>>>>> theirs
 =======
 >>>>>>> theirs

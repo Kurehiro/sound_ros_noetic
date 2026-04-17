@@ -27,7 +27,7 @@ echo "ROS_MASTER_URI=${MASTER_URI}"
 echo "ROS_HOSTNAME=${HOSTNAME_FOR_ROS}"
 echo "ROS_IP=${CONTAINER_IP}"
 
-# 毎回 Terminator 設定を読み込む（13分割レイアウト）
+# 毎回 Terminator 設定を読み込む（8分割レイアウト）
 # マウント先の違いに備えて複数パスを探索
 if ! docker exec ros_audio_container bash -lc '
   mkdir -p /root/.config/terminator
@@ -72,4 +72,6 @@ exec docker exec -it \
   -e ROS_MASTER_URI="${MASTER_URI}" \
   -e ROS_HOSTNAME="${HOSTNAME_FOR_ROS}" \
   -e ROS_IP="${CONTAINER_IP}" \
-  ros_audio_container bash
+  ros_audio_container bash -lc "/root/workspace/ros_shell_init.sh"
+
+export LANG=ja_JP.UTF-8

@@ -1,6 +1,6 @@
 FROM osrf/ros:noetic-desktop
 
-# Install terminator and audio utils
+# Install terminator, audio utils, Japanese locale, and Japanese fonts
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     terminator \
@@ -26,9 +26,22 @@ RUN apt-get update && apt-get install -y \
     wget \
     git \
     libbz2-dev \
+    locales \
+    language-pack-ja \
+    fonts-noto-cjk \
+    && locale-gen ja_JP.UTF-8 \
+    && update-locale LANG=ja_JP.UTF-8 LANGUAGE=ja_JP:ja LC_ALL=ja_JP.UTF-8 \
+    && fc-cache -fv \
     && rm -rf /var/lib/apt/lists/*
 
+ENV LANG=ja_JP.UTF-8
+ENV LANGUAGE=ja_JP:ja
+ENV LC_ALL=ja_JP.UTF-8
+
 RUN echo "export PS1='\[\e[1;36m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ '" >> /root/.bashrc
+RUN echo 'export LANG=ja_JP.UTF-8' >> /root/.bashrc
+RUN echo 'export LANGUAGE=ja_JP:ja' >> /root/.bashrc
+RUN echo 'export LC_ALL=ja_JP.UTF-8' >> /root/.bashrc
 
 RUN cd /tmp \
     && wget https://www.python.org/ftp/python/3.10.12/Python-3.10.12.tgz \
