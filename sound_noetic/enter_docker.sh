@@ -11,8 +11,21 @@ fi
 
 DISPLAY_FOR_CONTAINER=${DISPLAY:-:0}
 
+# DISPLAYが :N 形式で、対応するXソケットがない場合は利用可能なXを自動選択
+if [[ "${DISPLAY_FOR_CONTAINER}" =~ ^:([0-9]+)(\..*)?$ ]]; then
+  DISP_NUM="${BASH_REMATCH[1]}"
+  if [ ! -S "/tmp/.X11-unix/X${DISP_NUM}" ]; then
+    ALT_SOCKET=$(ls /tmp/.X11-unix/X* 2>/dev/null | head -n1 || true)
+    if [ -n "${ALT_SOCKET}" ]; then
+      ALT_NUM=$(basename "${ALT_SOCKET}" | sed 's/^X//')
+      DISPLAY_FOR_CONTAINER=":${ALT_NUM}"
+    fi
+  fi
+fi
+
 # Xサーバーへのアクセスを許可（失敗しても継続）
 xhost +local:docker >/dev/null 2>&1 || true
+xhost +SI:localuser:root >/dev/null 2>&1 || true
 
 # コンテナを起動（存在しない場合は作成、停止している場合は起動）
 docker compose up -d ros_audio
@@ -73,5 +86,3 @@ exec docker exec -it \
   -e ROS_HOSTNAME="${HOSTNAME_FOR_ROS}" \
   -e ROS_IP="${CONTAINER_IP}" \
   ros_audio_container bash -lc "/root/workspace/ros_shell_init.sh"
-
-export LANG=ja_JP.UTF-8

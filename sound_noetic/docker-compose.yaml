@@ -11,15 +11,13 @@ services:
       - QT_X11_NO_MITSHM=1
       - GDK_DISABLE_SHM=1
       - NO_AT_BRIDGE=1
-      - PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native
-      - PULSE_COOKIE=/root/.config/pulse/cookie
+      - XAUTHORITY=/root/.Xauthority
       - ROS_MASTER_URI=${ROS_MASTER_URI:-http://ros_audio_container:11311}
       - ROS_HOSTNAME=${ROS_HOSTNAME:-ros_audio_container}
     volumes:
       - /dev/snd:/dev/snd
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native
-      - ${HOME_DIR}/.config/pulse/cookie:/root/.config/pulse/cookie
+      - ${XAUTHORITY_FILE}:/root/.Xauthority:ro
       - .:/root/workspace
     devices:
       - /dev/snd:/dev/snd

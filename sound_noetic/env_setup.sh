@@ -17,6 +17,11 @@ USER_ID=$(id -u)
 GROUP_ID=$(id -g)
 XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$USER_ID}
 HOME_DIR=$HOME
+XAUTHORITY_FILE=${XAUTHORITY:-$HOME/.Xauthority}
+
+# Ensure files/directories for cross-PC portability
+mkdir -p "$(dirname "$XAUTHORITY_FILE")"
+touch "$XAUTHORITY_FILE"
 
 # Prompt for ROS settings
 read -p "Enter ROS_MASTER_URI [${ROS_MASTER_URI:-$DEFAULT_ROS_MASTER_URI}]: " INPUT_URI
@@ -34,6 +39,7 @@ HOME_DIR=$HOME_DIR
 USER_ID=$USER_ID
 GROUP_ID=$GROUP_ID
 DISPLAY=$DISPLAY
+XAUTHORITY_FILE=$XAUTHORITY_FILE
 EOF_ENV
 
 echo "Configuration saved to .env:"
