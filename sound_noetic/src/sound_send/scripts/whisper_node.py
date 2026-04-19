@@ -17,6 +17,7 @@ class WhisperNode:
 
         self.model_size = rospy.get_param('~model', 'medium')
         self.device_index = rospy.get_param('~device_index', '')
+        self.bt_keyword = rospy.get_param('~bt_keyword', '')
 
         # Audio processing params
         self.enable_noise_reduction = rospy.get_param('~enable_noise_reduction', True)
@@ -65,6 +66,8 @@ class WhisperNode:
         cmd = ["rosrun", "sound_send", "sound_subsc.py", f"_mic_id:={self.mic_id}"]
         if self.device_index != "":
             cmd.append(f"_device_index:={self.device_index}")
+        if self.bt_keyword != "":
+            cmd.append(f"_bt_keyword:={self.bt_keyword}")
         try:
             subprocess.Popen(cmd)
             rospy.loginfo("sound_subsc.py launched successfully")
