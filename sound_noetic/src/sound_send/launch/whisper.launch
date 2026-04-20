@@ -1,7 +1,6 @@
 <launch>
   <arg name="mic_id" default="f" />
   <arg name="device_index" default="" />
-  <arg name="bt_keyword" default="" />
   <arg name="vol_thresh" default="0.2" />
   <arg name="robot_ip" default="150.89.169.206" />
   <arg name="ros_ip" default="150.89.169.151" />
@@ -12,14 +11,12 @@
       <param name="mic_id" value="$(arg mic_id)" />
       <param name="vol_thresh" value="$(arg vol_thresh)" />
       <param name="device_index" value="$(arg device_index)" if="$(eval arg('device_index') != '')"/>
-      <param name="bt_keyword" value="$(arg bt_keyword)" />
     </node>
 
     <node pkg="sound_send" type="whisper_node.py" name="whisper_node" output="screen">
       
       <param name="mic_id" value="$(arg mic_id)" />
       <param name="device_index" value="$(arg device_index)" if="$(eval arg('device_index') != '')"/>
-      <param name="bt_keyword" value="$(arg bt_keyword)" />
 
       <remap from="/audio_path" to="/first_mic/audio_path" if="$(eval arg('mic_id') == 'f')"/>
       <remap from="/audio_path" to="/second_mic/audio_path" if="$(eval arg('mic_id') == 's')"/>
